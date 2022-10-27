@@ -1,7 +1,7 @@
 
 type Submission @entity {
   id: ID!
-  metadataURI: String!
+  uri: String!
   owner: Bytes! # address
   approved: Boolean!
 }

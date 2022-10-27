@@ -34,7 +34,7 @@ export function handleSubmited(event: Submited): void {
 
   // Entity fields can be set based on event parameters
   submission.owner = event.params.from
-  submission.metadataURI = event.params.uri
+  submission.uri = event.params.uri
 
   // Entities can be written to the store with `.save()`
   submission.save()

@@ -42,13 +42,13 @@ export class Submission extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get metadataURI(): string {
-    let value = this.get("metadataURI");
+  get uri(): string {
+    let value = this.get("uri");
     return value!.toString();
   }
 
-  set metadataURI(value: string) {
-    this.set("metadataURI", Value.fromString(value));
+  set uri(value: string) {
+    this.set("uri", Value.fromString(value));
   }
 
   get owner(): Bytes {
