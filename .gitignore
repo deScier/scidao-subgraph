@@ -1,5 +1,7 @@
 node_modules
 out
+build
+generated
 .env
 coverage
 coverage.json
