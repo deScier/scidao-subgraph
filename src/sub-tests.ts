@@ -1,6 +1,6 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 import {
-  SubTests,
+  SubTests as TokenContract,
   ApprovalForAll,
   OwnershipTransferred,
   Submited,
@@ -8,31 +8,36 @@ import {
   TransferSingle,
   URI
 } from "../generated/SubTests/SubTests"
-import { ExampleEntity } from "../generated/schema"
+import { ipfs, json, JSONValue,Bytes } from '@graphprotocol/graph-ts'
 
-export function handleApprovalForAll(event: ApprovalForAll): void {
+
+import { Submission,Token } from "../generated/schema"
+
+export function handleApprovalForAll(event: ApprovalForAll): void {}
+
+export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
+
+export function handleSubmited(event: Submited): void {
+
   // Entities can be loaded from the store using a string ID; this ID
   // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
+  let submission = Submission.load(event.params.uri)
 
   // Entities only exist after they have been saved to the store;
   // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
-
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+  if (!submission) {
+    submission = new Submission(event.params.uri)
   }
 
   // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
+  submission.approved = false;
 
   // Entity fields can be set based on event parameters
-  entity.account = event.params.account
-  entity.operator = event.params.operator
+  submission.owner = event.params.from
+  submission.metadataURI = event.params.uri
 
   // Entities can be written to the store with `.save()`
-  entity.save()
+  submission.save()
 
   // Note: If a handler doesn't require existing field values, it is faster
   // _not_ to load the entity from the store. Instead, create it fresh with
@@ -60,14 +65,67 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
   // - contract.symbol(...)
   // - contract.totalSupply(...)
   // - contract.uri(...)
+
 }
-
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
-
-export function handleSubmited(event: Submited): void {}
 
 export function handleTransferBatch(event: TransferBatch): void {}
 
-export function handleTransferSingle(event: TransferSingle): void {}
+export function handleTransferSingle(event: TransferSingle): void {
 
-export function handleURI(event: URI): void {}
+
+  let token = Token.load(event.params.id.toString());
+  if (!token) {
+    token = new Token(event.params.id.toString());
+    token.creator = event.params.to.toHexString();
+    token.tokenID = event.params.id;
+    token.supply = event.params.value;
+    token.createdAtTimestamp = event.block.timestamp;
+    token.creator = event.params.to.toHexString();
+    let tokenContract = TokenContract.bind(event.address);
+    token.metadataURI = tokenContract.uri(event.params.id);
+    token.name = "";
+    token.description = "";
+    token.imageURI = "";
+    let hash = token.metadataURI.split('ipfs://').join('')
+    let data = ipfs.cat(hash);
+    if(data){
+      let value = json.fromBytes(data).toObject()
+
+      let name = value.get('name');
+      if(name){
+        token.name = name.toString();
+      }
+      let description = value.get('description');
+      if(description){
+        token.description = description.toString();
+      }
+      let imageUri = value.get('image');
+      if(imageUri){
+        token.imageURI = imageUri.toString();
+      }
+    }
+    token.save();
+  }
+  // Entities can be loaded from the store using a string ID; this ID
+  // needs to be unique across all entities of the same type
+  let submission = Submission.load(token.metadataURI.replace("ipfs://",""))
+
+  // Entities only exist after they have been saved to the store;
+  // `null` checks allow to create entities on demand
+  if (!submission) {
+    return
+  }
+  if(!submission.approved){
+    submission.approved = true;
+
+    submission.save()
+  }
+
+
+}
+
+export function handleURI(event: URI): void {
+
+
+
+}

@@ -1,6 +1,6 @@
 specVersion: 0.0.4
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 features:
   - nonDeterministicIpfs
 dataSources:
@@ -24,7 +24,7 @@ dataSources:
         - URI
       abis:
         - name: SubTests
-          file: ./abis/SubTests.json
+          file: SubTests/abis/SubTests.json
       eventHandlers:
         - event: ApprovalForAll(indexed address,indexed address,bool)
           handler: handleApprovalForAll
@@ -38,4 +38,4 @@ dataSources:
           handler: handleTransferSingle
         - event: URI(string,indexed uint256)
           handler: handleURI
-      file: ./src/sub-tests.ts
+      file: SubTests/SubTests.wasm
